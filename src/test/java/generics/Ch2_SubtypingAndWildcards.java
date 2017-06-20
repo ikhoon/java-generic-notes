@@ -4,7 +4,7 @@ import org.junit.Test;
 
 import java.util.*;
 
-public class SubtypingAndWildcards {
+public class Ch2_SubtypingAndWildcards {
 
     // 2.1 Subtyping and the Substitution Principle
     // 우리는 얼마나 알고 있나?
@@ -212,6 +212,7 @@ public class SubtypingAndWildcards {
         for (int i = 0; i < n; i++) ints.add(i);
     }
 
+    /*
     // Quiz : get, put을 함께 할때?
     public static double sumCount(Collection<? extends Number> nums, int n) {
         count(nums, n);
@@ -222,6 +223,7 @@ public class SubtypingAndWildcards {
         count(nums, n);
         return sum(nums);
     }
+    */
 
 
 
@@ -252,5 +254,102 @@ public class SubtypingAndWildcards {
 
 
     }
+
+    // 2.5 Arrays
+    // array 는 covariant이다
+    // Inteter[] a = Number[] 가 대입 가능함.
+
+    // 지난번에 이야기 했던 covariant, contravariant, invariant 에 다시 자세히 알아보자
+    // covariant?
+    // contravariant?
+    // invariant?
+    public static void sort0(Object[] a) {
+    }
+
+    public static <T> void sort1(T[] a) {
+    }
+
+    // 2.6 Wildcards Versus Type Parameters
+    interface Collection2<E> {
+        public boolean contains(Object o);
+        public boolean containsAll(Collection2<?> c);
+    }
+
+    //  Collection<?> 은 Collection<? extends Object> 와 같은 표현이다.
+
+    @Test
+    public void objectContains() {
+        Object obj = "one";
+        List<Object> objs = Arrays.<Object>asList("one", 2, 3.14, 4);
+        List<Integer> ints = Arrays.asList(2, 4);
+        assert objs.contains(obj);
+        assert objs.containsAll(ints);
+        // 이거랑
+        assert !ints.contains(obj);
+        // 이거는 멍청한 코드처럼 보인다
+        assert !ints.containsAll(objs);
+        // 왜냐면 List<Integer>는 "one" 문자열과 같은 객체를 가지고 있을수 없다.
+
+    }
+
+    @Test
+    public void integerContains() {
+        Object obj = 1;
+        List<Object> objs = Arrays.<Object>asList(1, 3);
+        List<Integer> ints = Arrays.asList(1, 2, 3, 4);
+        // 그러지만 obj 가 integer라면 상황은 달라진다.
+        assert ints.contains(obj);
+        // 그러지만 objs 안의 모든 구성요소가 integer라면 이또한 마찬가지다.
+        assert ints.containsAll(objs);
+    }
+
+    // 다른 디자인을 고려해보자.
+    interface MyCollection<E> {
+        boolean contains(E o); // 제약이 있다.
+        boolean containsAll(Collection<? extends E> c); // 여기도 마찬가지이다.
+    }
+
+    static class MyList<E> implements MyCollection<E> {
+
+
+        List<E> xs;
+
+        public MyList() {
+            this.xs = new ArrayList<>();
+        }
+        public MyList(List<E> xs) {
+            this.xs = xs;
+        }
+
+        @Override
+        public boolean contains(E o) {
+            return false;
+        }
+
+        @Override
+        public boolean containsAll(MyCollection<? extends E> c) {
+            return false;
+        }
+
+        public static <T> MyList asList(T... ts) {
+            return new MyList<T>(Arrays.asList(ts));
+        }
+    }
+
+    @Test
+    public void myCollectionContains() {
+        Object obj = "one";
+        MyList<Object> objs = MyList.<Object>asList("one", 2, 3.14, 4);
+        MyList<Integer> ints = MyList.asList(2, 4);
+        assert objs.contains(obj);
+        assert objs.containsAll(ints);
+        assert !ints.contains(obj); // compile-time error assert
+        assert !ints.containsAll(objs); // compile-time error
+    }
+
+
+
+
+
 
 }
