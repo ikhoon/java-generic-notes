@@ -498,3 +498,5 @@ public class Ch2_SubtypingAndWildcards {
     // 혹은 이걸 passing 해줘야한다.
     class SomeList<T> extends ArrayList<T> {}
 }
+
+
