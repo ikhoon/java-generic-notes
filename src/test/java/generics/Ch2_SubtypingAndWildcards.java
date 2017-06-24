@@ -6,6 +6,7 @@ import java.util.*;
 
 public class Ch2_SubtypingAndWildcards {
 
+
     // 2.1 Subtyping and the Substitution Principle
     // 우리는 얼마나 알고 있나?
     // * Integer는 Number의 하위 타입이다.
@@ -255,6 +256,10 @@ public class Ch2_SubtypingAndWildcards {
 
     }
 
+    // variant
+
+
+
     // 2.5 Arrays
     // array 는 covariant이다
     // Inteter[] a = Number[] 가 대입 가능함.
@@ -270,9 +275,9 @@ public class Ch2_SubtypingAndWildcards {
     }
 
     // 2.6 Wildcards Versus Type Parameters
-    interface Collection2<E> {
+    interface Collection2<Int> {
         public boolean contains(Object o);
-        public boolean containsAll(Collection2<?> c);
+        public boolean containsAll(Collection2<? extends Int> c);
     }
 
     //  Collection<?> 은 Collection<? extends Object> 와 같은 표현이다.
@@ -343,8 +348,8 @@ public class Ch2_SubtypingAndWildcards {
         MyList<Integer> ints = MyList.asList(2, 4);
         assert objs.contains(obj);
         assert objs.containsAll(ints);
-        assert !ints.contains(obj); // compile-time error assert
-        assert !ints.containsAll(objs); // compile-time error
+//        assert !ints.contains(obj); // compile-time error assert
+//        assert !ints.containsAll(objs); // compile-time error
     }
 
 
@@ -378,7 +383,7 @@ public class Ch2_SubtypingAndWildcards {
     public static void reverse1_(List<?> list) {
         List<Object> tmp = new ArrayList<Object>(list);
         for (int i = 0; i < list.size(); i++) {
-            list.set(i, tmp.get(list.size()-i-1)); // compile-time error
+//            list.set(i, tmp.get(list.size()-i-1)); // compile-time error
         }
     }
 
@@ -387,7 +392,7 @@ public class Ch2_SubtypingAndWildcards {
     public static void reverse3_(List<?> list) {
         List<?> tmp = new ArrayList<>(list);
         for (int i = 0; i < list.size(); i++) {
-            list.set(i, tmp.get(list.size()-i-1)); // compile-time error
+//            list.set(i, tmp.get(list.size()-i-1)); // compile-time error
         }
     }
 
@@ -416,8 +421,8 @@ public class Ch2_SubtypingAndWildcards {
     // wildcard는 top level class의 생성 표현에서 사용할수 없다
     // 개체를 생성할때는 타입이 명확해야한다.
     public void newWithWildCard() {
-        List<?> list = new ArrayList<?>(); // compile-time error
-        Map<String, ? extends Number> map = new HashMap<String, ? extends Number>(); // compile-time error
+//        List<?> list = new ArrayList<?>(); // compile-time error
+//        Map<String, ? extends Number> map = new HashMap<String, ? extends Number>(); // compile-time error
         List<?> list1 = new ArrayList<Integer>(); // 이런건 된다.
     }
 
@@ -430,7 +435,7 @@ public class Ch2_SubtypingAndWildcards {
         List<Number> nums = new ArrayList<Number>();
         List<? super Number> sink = nums;
         List<? extends Number> source = nums;
-        for (int i=0; i<10; i++) sink.get(i)/
+        for (int i=0; i<10; i++) sink.get(i);
         for (int i=0; i<10; i++) sink.add(i);
         double sum=0; for (Number num : source) sum+=num.doubleValue();
     }
@@ -457,9 +462,9 @@ public class Ch2_SubtypingAndWildcards {
     public void restictionRule() {
         List<?> list = new ArrayList<Object>(); // ok
         // interface이다, 명확하지 않다.
-        List<?> list = new List<Object>(); // compile-time error
+//        List<?> list = new List<Object>(); // compile-time error
         // ? wildcard이다 명확하지 않다. 여긴 객체 만드는 곳이다.
-        List<?> list = new ArrayList<?>(); // compile-time error
+//        List<?> list = new ArrayList<?>(); // compile-time error
     }
 
     static class MyLists {
@@ -475,7 +480,7 @@ public class Ch2_SubtypingAndWildcards {
         List<?> list2 = MyLists.<Object>factory();
 
         // 타입 파라메터는 함수에 표시하면 wildcard는 안된다.
-        List<?> list3 = MyLists.<?>factory(); // compile-time error
+//        List<?> list3 = MyLists.<?>factory(); // compile-time error
 
         // 앞에서 언급했듯이 nested wildcard는 괜찮다.
         List<List<?>> list4 = MyLists.<List<?>>factory(); // ok
@@ -487,9 +492,9 @@ public class Ch2_SubtypingAndWildcards {
     // 그 타입은 wildcard가 되어서는 안된다.
 
     // 허용안됨
-    class AnyList extends ArrayList<?> {}
+//    class AnyList extends ArrayList<?> {}
     // 역시나 허용이 안됨
-    abstract class AnotherList implements List<?> {} // compile-time error
+//    abstract class AnotherList implements List<?> {} // compile-time error
     // 하지만 nested wildcard는 됨
     class NestedList extends ArrayList<List<?>> {}// ok
 
