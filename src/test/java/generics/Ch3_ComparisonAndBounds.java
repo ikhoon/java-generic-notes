@@ -3,6 +3,9 @@ package generics;
 import org.junit.Test;
 import sun.awt.im.CompositionArea;
 
+import java.io.Closeable;
+import java.io.IOException;
+import java.nio.CharBuffer;
 import java.util.*;
 
 /**
@@ -89,6 +92,16 @@ public class Ch3_ComparisonAndBounds {
         }
 
         @Override
+        public int hashCode() {
+            return foo;
+        }
+
+//        @Override
+//        public boolean equals(Object obj) {
+//            return foo == ((Foo) obj).foo;
+//        }
+
+        @Override
         public String toString() {
             return "Foo(" + foo + ")" + "@" + hashCode();
         }
@@ -97,7 +110,25 @@ public class Ch3_ComparisonAndBounds {
     // Quiz : 이것의 출력값은?
     @Test
     public void sortedSet() {
+        // SortedSet
         Set<Foo> is = new TreeSet<>();
+        Foo a = new Foo(1);
+        Foo b = new Foo(2);
+        Foo c = new Foo(1);
+        is.add(a);
+        is.add(b);
+        is.add(c);
+        for (Foo i : is) {
+            // 1, 1, 2
+            System.out.println(i);
+        }
+    }
+
+
+    @Test
+    public void hashSet() {
+        // hashCode
+        Set<Foo> is = new HashSet<>();
         Foo a = new Foo(1);
         Foo b = new Foo(2);
         Foo c = new Foo(1);
@@ -109,16 +140,15 @@ public class Ch3_ComparisonAndBounds {
         }
     }
 
-
     @Test
-    public void hashSet() {
+    public void hashSet2() {
+        // hashCode
         Set<Foo> is = new HashSet<>();
         Foo a = new Foo(1);
-        Foo b = new Foo(2);
-        Foo c = new Foo(1);
         is.add(a);
+        a.foo = 2;
+        Foo b = a;
         is.add(b);
-        is.add(c);
         for (Foo i : is) {
             System.out.println(i);
         }
@@ -145,6 +175,7 @@ public class Ch3_ComparisonAndBounds {
             System.out.println(i);
         }
     }
+
     // if and only if https://en.wikipedia.org/wiki/If_and_only_if
 
     // equals와 comapreTo
@@ -179,9 +210,11 @@ public class Ch3_ComparisonAndBounds {
     // Comparable<T> interface를 이용해서 collection의 maximum을 어떻게 찾는지 알아보자.
     // 우선 간단한 버전부터
     // 여기서 T는 Comparable<T>의 하위 타입이다.
-    public static <T extends Comparable<T>> T max1(Collection<T> coll) {
+    public static <T extends Comparable<? super T>> T max1(Collection<? extends T> coll) {
         T candidate = coll.iterator().next();
+        // GET
         for (T elt : coll) {
+            // PUT
             if (candidate.compareTo(elt) < 0) candidate = elt; }
         return candidate;
     }
@@ -243,7 +276,7 @@ public class Ch3_ComparisonAndBounds {
     public void compareAppleOrange() {
         Apple apple = new Apple();
         Orange orange = new Orange();
-        apple.compareTo(orange); // 컴파일 안됨
+//        apple.compareTo(orange); // 컴파일 안됨
     }
 
 
@@ -260,18 +293,21 @@ public class Ch3_ComparisonAndBounds {
 
     }
 
+    @Test
     public void maxFruit() {
         List<Apple> apples = Arrays.asList(new Apple(), new Apple());
         List<Apple1> apple1s = Arrays.asList(new Apple1(), new Apple1());
-        max1(apples);
-        max2(apples);
-        max3(apples);
-
-        // 안됨
+        this.<Apple1>max1(apple1s);
         max1(apple1s);
-        // 됨
-        max2(apple1s);
-        max3(apple1s);
+        this.<Fruit1>max1(apple1s);
+//        max2(apples);
+//        max3(apples);
+//
+//        // 안됨
+////        max1(apple1s);
+//        // 됨
+//        max2(apple1s);
+//        max3(apple1s);
 
 
         // Apple1은 Comparable<T>를 바로 구현하고 있지 않아서 max1의 함수를 사용할수 없다.
@@ -374,5 +410,81 @@ public class Ch3_ComparisonAndBounds {
 
 
     // 3.5 Enumerated Types
-    // TODO
+    // 자바 5부터 추가된 기능
+    enum Season { WINTER, SPRING, SUMMER, FALL }
+
+    // 각각의 enum type은 java.lang.Enum의 하위 클래스이다.
+
+    public static abstract class MyEnum<E extends MyEnum<E>> implements Comparable<E> {
+        private final String name;
+        final int ordinal;
+        protected MyEnum(String name, int ordinal) {
+            this.name = name; this.ordinal = ordinal;
+        }
+        public final String name() { return name; }
+        public final int ordinal() { return ordinal; }
+        public String toString() { return name; }
+        public final int compareTo(E o) { return ordinal - o.ordinal; }
+    }
+
+
+    // 아래코드는
+    // enum Season { WINTER, SPRING, SUMMER, FALL }
+    // 과 같은 구현이다.
+    static final class Season1 extends MyEnum<Season1> {
+        private Season1(String name, int ordinal) {
+            super(name, ordinal);
+        }
+
+        public static final Season1 WINTER = new Season1("WINTER", 0);
+        public static final Season1 SPRING = new Season1("SPRING", 1);
+        public static final Season1 SUMMER = new Season1("SUMMER", 2);
+        public static final Season1 FALL = new Season1("FALL", 3);
+        private static final Season1[] VALUES = {WINTER, SPRING, SUMMER, FALL};
+
+        public static Season1[] values() {
+            return VALUES.clone();
+        }
+
+        public static Season1 valueOf(String name) {
+            for (Season1 e : VALUES)
+                if (e.name().equals(name)) return e;
+            throw new IllegalArgumentException();
+        }
+    }
+
+    // E extends Enum<E>
+    // Season extends Enum<Season>
+    // Enum<E> implements Comparable<E>
+    // Enum<Season> implements Comparable<Season>
+
+
+    // 3.6 Multiple Bounds
+    // 이때까지는 바운드가 1개만있었다.
+    // 여러개 걸리는 경우에 대해서 알아보자.
+
+    // 다시 찾아온 copy함수, 이번에 파일 복사다.
+    // 역시나 java api는 넘나 깔끔하지 못한것!
+    // file하나 copy하는데 넘나 많은 코드들이 필요로 하.
+
+
+
+    public static <S extends Readable & Closeable, T extends Appendable & Closeable>
+    void copy(S src, T trg, int size) throws IOException
+    {
+        try {
+            CharBuffer buf = CharBuffer.allocate(size); int i = src.read(buf);
+            while (i >= 0) {
+                buf.flip(); // prepare buffer for writing
+                // Readarble
+                trg.append(buf);
+                buf.clear(); // prepare buffer for reading
+                i = src.read(buf); }
+        } finally {
+            // Closeable
+            src.close();
+            trg.close();
+        } }
+
+
 }
