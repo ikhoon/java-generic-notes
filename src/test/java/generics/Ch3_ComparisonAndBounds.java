@@ -1,10 +1,10 @@
 package generics;
 
 import org.junit.Test;
-import sun.awt.im.CompositionArea;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.nio.CharBuffer;
 import java.util.*;
 
@@ -269,6 +269,7 @@ public class Ch3_ComparisonAndBounds {
     class Apple extends Fruit implements Comparable<Apple> {
         @Override public int compareTo(Apple o) { return 0; }
     }
+
     class Orange extends Fruit implements Comparable<Orange> {
         @Override public int compareTo(Orange o) { return 0; }
     }
@@ -280,7 +281,7 @@ public class Ch3_ComparisonAndBounds {
     }
 
 
-    class Fruit1 implements Comparable<Fruit1>{
+    class Fruit1 implements Comparable<Fruit1> {
         @Override public int compareTo(Fruit1 o) { return 0; }
     }
     class Apple1 extends Fruit1 {}
@@ -315,6 +316,7 @@ public class Ch3_ComparisonAndBounds {
 
     }
 
+    // default
 
     // 3.4 Comparator
     // * Comparable interface를 구현하고 싶지 않을때
@@ -329,7 +331,9 @@ public class Ch3_ComparisonAndBounds {
 
     // 자바의 라이브러리들은 Comparable과 Comparator 둘가지 버전의 API를 제공한다
     // comparable 버전
-    <T extends Comparable<? super T>> T max4(Collection<? extends T> coll) {
+    <T extends Comparable<? super T>> T
+
+    max4(Collection<? extends T> coll) {
         T candidate = coll.iterator().next();
         for (T elt : coll)
             if (candidate.compareTo(elt) < 0) candidate = elt;
@@ -410,12 +414,14 @@ public class Ch3_ComparisonAndBounds {
 
 
     // 3.5 Enumerated Types
+
     // 자바 5부터 추가된 기능
     enum Season { WINTER, SPRING, SUMMER, FALL }
 
     // 각각의 enum type은 java.lang.Enum의 하위 클래스이다.
 
-    public static abstract class MyEnum<E extends MyEnum<E>> implements Comparable<E> {
+    public static abstract class MyEnum<E extends MyEnum<E>>
+            implements Comparable<E> {
         private final String name;
         final int ordinal;
         protected MyEnum(String name, int ordinal) {
@@ -446,7 +452,7 @@ public class Ch3_ComparisonAndBounds {
             return VALUES.clone();
         }
 
-        public static Season1 valueOf(String name) {
+        public static Season1 valueOf$(String name) {
             for (Season1 e : VALUES)
                 if (e.name().equals(name)) return e;
             throw new IllegalArgumentException();
@@ -458,7 +464,13 @@ public class Ch3_ComparisonAndBounds {
     // Enum<E> implements Comparable<E>
     // Enum<Season> implements Comparable<Season>
 
+    // A extends B [,] C
 
+    // 모리스, 제이콥 : &, 치즈 : &&
+    // 까메오 : |
+    // 카레 : B $ C
+    // 마틴 : ||
+    // 제이콥 :
     // 3.6 Multiple Bounds
     // 이때까지는 바운드가 1개만있었다.
     // 여러개 걸리는 경우에 대해서 알아보자.
@@ -476,7 +488,7 @@ public class Ch3_ComparisonAndBounds {
             CharBuffer buf = CharBuffer.allocate(size); int i = src.read(buf);
             while (i >= 0) {
                 buf.flip(); // prepare buffer for writing
-                // Readarble
+                // Readable
                 trg.append(buf);
                 buf.clear(); // prepare buffer for reading
                 i = src.read(buf); }
@@ -487,4 +499,74 @@ public class Ch3_ComparisonAndBounds {
         } }
 
 
+    // 3.7 Bridges
+    // 제너릭 코드는 컴파일 되면 제너릭이 없는 코드로 컴파일된다.
+    // type erasure
+
+
+
+
+
+
+    // Comparable<T> 같은 parameterized interface는 컴파일러가 추가로 함수를 만든다.
+    // 이런 함수를 "bridges"라 부른다.
+
+    /**
+     * @see Integer#compareTo(Object)
+     * Integer.java 코드에 들어가보면 compareTo 함수를 1개만 정의하고 있다.
+     * 하지만 실제 생성되는 코드는 2개이다!
+     */
+    @Test
+    public void showMeTheBridgeMethod() {
+        for (Method m : Integer.class.getMethods())
+            if (m.getName().equals("compareTo"))
+                System.out.println(m.toGenericString());
+    }
+
+    // 옛날에는 이렇게 출력됬다 함
+    // public int Integer.compareTo(Integer)
+    // public bridge int Integer.compareTo(java.lang.Object)
+
+    // 아래 두가지 버전의 코드는 컴파일 하면 같은 코드라 한다
+
+    // Generic 있기전의 코드이다.
+    interface Comparable3 {
+        int compareTo(Object o);
+    }
+    class Integer3 implements Comparable3 {
+        private final int value;
+        public Integer3(int value) { this.value = value; }
+        public int compareTo(Integer3 i) {
+            return (value < i.value) ? -1 : (value == i.value) ? 0 : 1;
+        }
+        // 이함수가 bridge이다.
+        public int compareTo(Object o) {
+            return compareTo((Integer)o);
+        }
+    }
+
+    // Generic 이후의 코드는
+    interface Comparable4<T> {
+        int compareTo(T o);
+    }
+    class Integer4 implements Comparable4<Integer4> {
+        private final int value;
+        public Integer4(int value) { this.value = value; }
+        public int compareTo(Integer4 i) {
+            return (value < i.value) ? -1 : (value == i.value) ? 0 : 1;
+        }
+    }
+
+    @Test
+    public void bridge(){
+        for (Method m : Thread.class.getMethods()) if (m.getName().equals("clone"))
+            System.out.println(m.toGenericString());
+    }
+
+    // bridge 는 legacy code를 generic으로 바꾸는 중요한 역할을 한다함
+    // 그건 8.4에 나온다함
+
+
+
+    // 3.8 Covariant Overriding
 }
