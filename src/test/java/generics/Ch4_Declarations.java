@@ -325,7 +325,7 @@ public class Ch4_Declarations {
     // Comparable로 바뀌어서 같은 interface를 중복으로 상속 받는 형국이다.
     // 실제 이게 컴파일 되면 앞에서 나왔던 bridge 함수가 겁내 복잡해질수 있다한다.
     // 역시나 겁나 하위호완성 챙김
-    
+
 
 
 
