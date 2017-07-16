@@ -537,8 +537,65 @@ public class Ch6_Reification {
         public Object[] toArray() { return toArray(new Object[0]); }
     }
 
+    // 6.8 Array Creation and Varargs
 
-    // 휴. 좀 쉬자.
+//    @SafeVarargs
+    final public <T> void varargs(T ...t) {
+        for (T t1 : t) {
+            System.out.println("### " + t1);
+        }
+    }
+
+    @Test
+    public void varargsWithArrayList() {
+        System.out.println("###############");
+        List<Integer> a = Arrays.asList(1, 2, 3);
+        List<Integer> b = Arrays.asList(4, 5, 6);
+        List<Integer>[] c = (List<Integer>[])new List<?>[2] ;
+        c[0] = a;
+        c[1] = b;
+        System.out.println(a);
+        varargs(c);
+        varargs(a, b);
+    }
 
 
+    // 6.9 Arrays as a Deprecated Type?
+    // array 버려야 하나?
+
+    // * Collection은 array보다 여러가지 면에서 뛰어나다.
+    // List<T>, List<? extends T>, or List<? super T> 등 보다 정확하게 타입 표현이 가능하다.
+    // 하지만 array는 T[] 뿐이다.
+    // * Collection은 array보다 유연하다.
+    // collection은 array, linked list, tree, hash table등이 표현이 가능하지만 array는 고정된 배열 표현만 가능함.
+    // * collection은 어떤 타입이든 가능하지만, array는 reifiable type 만 가능하다.
+
+
+
+    // 6.10 Summing Up
+    // • An instance test must be against a reifiable type.
+    // • A cast should usually be to a reifiable type.
+    //   (A cast to a nonreifiable type usually issues an unchecked warning.)
+    // • A class that extends Throwable must not be parameterized.
+    // • An array instance creation must be at a reifiable type.
+    // • The reified type of an array must be a subtype of the erasure of its static type
+    //   (see the Principle of Truth in Advertising),
+    //   and a publicly exposed array should be of a reifiable type
+    //   (see the Principle of Indecent Exposure).
+    // • Varargs should be of a reifiable type.
+    //   (A vararg of a nonreifiable type will issue an unchecked warning.)
+    // https://docs.oracle.com/javase/tutorial/java/generics/nonReifiableVarargsType.html
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
