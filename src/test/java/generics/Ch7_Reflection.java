@@ -107,6 +107,7 @@ public class Ch7_Reflection {
     }
     @Test
     public void intNewInstance() throws IllegalAccessException, InstantiationException {
+        
         Integer integer = int.class.newInstance();
     }
 
