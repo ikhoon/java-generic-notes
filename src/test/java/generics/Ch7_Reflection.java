@@ -107,7 +107,9 @@ public class Ch7_Reflection {
     }
     @Test
     public void intNewInstance() throws IllegalAccessException, InstantiationException {
-        Integer integer = int.class.newInstance();
+        
+        Integer integer = 
+                int.class.newInstance();
     }
 
     // 7.4 A Generic Reflection Library
